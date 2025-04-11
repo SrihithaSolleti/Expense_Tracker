@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Check Balance{% endblock %}
+
+{% block content %}
+<div class="balance-container">
+    <div class="balance-card">
+        <h1>Your Current Balance</h1>
+        <div class="balance-amount" id="current-balance">Loading...</div>
+        
+        <div class="balance-details">
+            <div class="detail-card income">
+                <h3>Total Income</h3>
+                <div class="amount" id="total-income">Loading...</div>
+            </div>
+            <div class="detail-card expense">
+                <h3>Total Expenses</h3>
+                <div class="amount" id="total-expenses">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .balance-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .balance-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .balance-card h1 {
+        color: #2d3436;
+        margin-bottom: 1.5rem;
+        font-size: 2rem;
+    }
+
+    .balance-amount {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #2d3436;
+        margin-bottom: 2rem;
+    }
+
+    .balance-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .detail-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .detail-card h3 {
+        color: #666;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .detail-card .amount {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .income .amount {
+        color: #00b894;
+    }
+
+    .expense .amount {
+        color: #d63031;
+    }
+
+    @media (max-width: 768px) {
+        .balance-details {
+            grid-template-columns: 1fr;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetch('/api/balance');
+            const data = await response.json();
+            
+            document.getElementById('current-balance').textContent = data.formatted_balance;
+            document.getElementById('total-income').textContent = data.incoming;
+            document.getElementById('total-expenses').textContent = data.outgoing;
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('current-balance').textContent = 'Error loading balance';
+            document.getElementById('total-income').textContent = 'Error';
+            document.getElementById('total-expenses').textContent = 'Error';
+        }
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,537 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .transactions-list {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .transactions-list h2 {
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .filter-section {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: nowrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+    }
+    
+    .filter-group label {
+        font-weight: 500;
+        color: #555;
+    }
+    
+    .filter-group select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: white;
+        min-width: 150px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+        padding: 15px;
+        text-align: left;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+    
+    tr:last-child td {
+        border-bottom: none;
+    }
+    
+    tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .edit-btn {
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+    }
+    
+    .edit-btn:hover {
+        background-color: #0056b3;
+        transform: translateY(-1px);
+    }
+    
+    .incoming {
+        color: #28a745;
+        font-weight: 500;
+    }
+    
+    .outgoing {
+        color: #dc3545;
+        font-weight: 500;
+    }
+
+    .add-transaction-section {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 20px 0;
+    }
+
+    .add-transaction-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .add-transaction-btn:first-child {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .add-transaction-btn:last-child {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .add-transaction-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 500px;
+        position: relative;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .modal-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .modal-buttons button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .modal-buttons button[type="button"] {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .modal-buttons button[type="submit"] {
+        background-color: #007bff;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .filter-section {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .filter-group {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .filter-group select {
+            width: 100%;
+        }
+
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="transactions-list">
+        <h2>Your Transactions</h2>
+        
+        <div class="add-transaction-section">
+            <button class="add-transaction-btn" onclick="openAddTransactionModal('incoming')">Add Income</button>
+            <button class="add-transaction-btn" onclick="openAddTransactionModal('outgoing')">Add Expense</button>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-group">
+                <label for="type-filter">Type:</label>
+                <select id="type-filter" onchange="filterTransactions()">
+                    <option value="all">All</option>
+                    <option value="incoming">Income</option>
+                    <option value="outgoing">Expense</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="category-filter">Category:</label>
+                <select id="category-filter" onchange="filterTransactions()">
+                    <option value="all">All</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="date-filter">Date:</label>
+                <select id="date-filter" onchange="filterTransactions()">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="last_month">Last Month</option>
+                    <option value="last_3_months">Last 3 Months</option>
+                    <option value="last_6_months">Last 6 Months</option>
+                    <option value="year">This Year</option>
+                </select>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="transactions-table-body">
+                <!-- Transactions will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Transaction Modal -->
+<div id="transaction-modal" class="modal">
+    <div class="modal-content">
+        <form id="transaction-form" onsubmit="handleTransactionSubmit(event)">
+            <input type="hidden" id="transaction-id">
+            <div class="form-group">
+                <label for="transaction-type">Type:</label>
+                <select id="transaction-type" required>
+                    <option value="incoming">Income</option>
+                    <option value="outgoing">Expense</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transaction-amount">Amount:</label>
+                <input type="number" id="transaction-amount" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="transaction-category">Category:</label>
+                <select id="transaction-category" required>
+                    <option value="salary">Salary</option>
+                    <option value="food">Food</option>
+                    <option value="transport">Transport</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="shopping">Shopping</option>
+                    <option value="utilities">Utilities</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transaction-description">Description:</label>
+                <input type="text" id="transaction-description">
+            </div>
+            <div class="modal-buttons">
+                <button type="button" onclick="closeTransactionModal()">Cancel</button>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let transactions = [];
+let currentTransactionId = null;
+
+function openAddTransactionModal(type) {
+    document.getElementById('transaction-modal').style.display = 'block';
+    document.getElementById('transaction-type').value = type;
+    document.getElementById('transaction-id').value = '';
+    document.getElementById('transaction-amount').value = '';
+    document.getElementById('transaction-description').value = '';
+    document.getElementById('transaction-category').value = 'other';
+}
+
+function closeTransactionModal() {
+    document.getElementById('transaction-modal').style.display = 'none';
+}
+
+function openEditTransactionModal(id) {
+    const transaction = transactions.find(t => t.id === id);
+    if (!transaction) return;
+
+    document.getElementById('transaction-modal').style.display = 'block';
+    document.getElementById('transaction-id').value = id;
+    document.getElementById('transaction-type').value = transaction.type;
+    document.getElementById('transaction-amount').value = transaction.amount;
+    document.getElementById('transaction-description').value = transaction.description;
+    document.getElementById('transaction-category').value = transaction.category || 'other';
+}
+
+async function handleTransactionSubmit(event) {
+    event.preventDefault();
+    
+    const id = document.getElementById('transaction-id').value;
+    const data = {
+        type: document.getElementById('transaction-type').value,
+        amount: parseFloat(document.getElementById('transaction-amount').value),
+        description: document.getElementById('transaction-description').value,
+        category: document.getElementById('transaction-category').value
+    };
+
+    try {
+        if (id) {
+            // Update existing transaction
+            await fetch(`/api/transactions/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        } else {
+            // Add new transaction
+            await fetch('/api/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        }
+        
+        closeTransactionModal();
+        loadTransactions();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to save transaction');
+    }
+}
+
+async function deleteTransaction(id) {
+    if (!confirm('Are you sure you want to delete this transaction?')) return;
+    
+    try {
+        await fetch(`/api/transactions/${id}`, {
+            method: 'DELETE'
+        });
+        loadTransactions();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to delete transaction');
+    }
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function formatAmount(amount, type) {
+    const formatted = new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR'
+    }).format(amount);
+    
+    return `<span class="${type}">${type === 'incoming' ? '+' : '-'} ${formatted}</span>`;
+}
+
+function filterTransactions() {
+    const typeFilter = document.getElementById('type-filter').value;
+    const categoryFilter = document.getElementById('category-filter').value;
+    const dateFilter = document.getElementById('date-filter').value;
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    
+    // New date calculations
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const startOfLast3Months = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+    const startOfLast6Months = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+
+    const filteredTransactions = transactions.filter(transaction => {
+        const transactionDate = new Date(transaction.date);
+        
+        // Type filter
+        if (typeFilter !== 'all' && transaction.type !== typeFilter) return false;
+        
+        // Category filter
+        if (categoryFilter !== 'all' && transaction.category !== categoryFilter) return false;
+        
+        // Date filter
+        switch(dateFilter) {
+            case 'today':
+                return transactionDate >= today;
+            case 'week':
+                return transactionDate >= startOfWeek;
+            case 'month':
+                return transactionDate >= startOfMonth;
+            case 'last_month':
+                return transactionDate >= startOfLastMonth && transactionDate < startOfMonth;
+            case 'last_3_months':
+                return transactionDate >= startOfLast3Months;
+            case 'last_6_months':
+                return transactionDate >= startOfLast6Months;
+            case 'year':
+                return transactionDate >= startOfYear;
+            default:
+                return true;
+        }
+    });
+    
+    displayTransactions(filteredTransactions);
+}
+
+function displayTransactions(transactionsToDisplay) {
+    const tbody = document.getElementById('transactions-table-body');
+    tbody.innerHTML = '';
+    
+    transactionsToDisplay.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    transactionsToDisplay.forEach(transaction => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${formatDate(transaction.date)}</td>
+            <td>${transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}</td>
+            <td>${transaction.category || 'N/A'}</td>
+            <td>${transaction.description || 'N/A'}</td>
+            <td>${formatAmount(transaction.amount, transaction.type)}</td>
+            <td>
+                <button class="edit-btn" onclick="openEditTransactionModal(${transaction.id})">Edit</button>
+                <button class="edit-btn" onclick="deleteTransaction(${transaction.id})">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function loadTransactions() {
+    try {
+        const response = await fetch('/api/transactions');
+        transactions = await response.json();
+        
+        // Update category filter options
+        const categories = [...new Set(transactions.map(t => t.category).filter(Boolean))];
+        const categoryFilter = document.getElementById('category-filter');
+        categoryFilter.innerHTML = '<option value="all">All</option>';
+        categories.forEach(category => {
+            categoryFilter.innerHTML += `<option value="${category}">${category}</option>`;
+        });
+        
+        filterTransactions();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to load transactions');
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('transaction-modal');
+    if (event.target === modal) {
+        closeTransactionModal();
+    }
+}
+
+// Load transactions when page loads
+document.addEventListener('DOMContentLoaded', loadTransactions);
+</script>
+{% endblock %} 

@@ -1,0 +1,834 @@
+{% extends "base.html" %}
+
+{% block title %}Bill Splitter{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .splitter-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .splitter-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .card-header h2 {
+        color: #333;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .card-header p {
+        color: #666;
+        margin: 5px 0 0 0;
+    }
+
+    .bill-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-group input {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .people-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .person-item {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .person-details {
+        flex: 1;
+        display: flex;
+        gap: 10px;
+    }
+
+    .person-details input {
+        flex: 1;
+    }
+
+    .add-person-btn {
+        padding: 10px;
+        background: #9333ea;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 500;
+    }
+
+    .remove-person {
+        padding: 8px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .calculate-btn {
+        padding: 12px;
+        background: #9333ea;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .result-section {
+        border-top: 1px solid #ddd;
+        padding-top: 20px;
+        margin-top: 20px;
+    }
+
+    .result-section h3 {
+        color: #333;
+        margin: 0 0 15px 0;
+    }
+
+    .result-details {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .result-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .result-item.total {
+        font-weight: bold;
+        background: #e9ecef;
+    }
+
+    .result-item.per-person {
+        color: #9333ea;
+        font-weight: bold;
+    }
+
+    .settlements-section {
+        margin-top: 20px;
+    }
+
+    .settlements-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .settlement-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .settlement-item .debtor {
+        color: #dc3545;
+        font-weight: 500;
+    }
+
+    .settlement-item .creditor {
+        color: #28a745;
+        font-weight: 500;
+    }
+
+    .settlement-item .amount {
+        font-weight: bold;
+    }
+
+    .split-history-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-top: 2rem;
+    }
+
+    .splits-list {
+        margin-top: 1rem;
+    }
+
+    .split-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .split-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .split-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .split-item-title {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .split-item-date {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .split-item-amount {
+        color: #9333ea;
+        font-weight: 600;
+    }
+
+    .save-split-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 1rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .save-split-btn:hover {
+        background: #218838;
+    }
+
+    .delete-split-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .delete-split-btn:hover {
+        background: #c82333;
+    }
+
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-group label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .filter-group select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        min-width: 150px;
+        font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+        .person-details {
+            flex-direction: column;
+        }
+
+        .person-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .remove-person {
+            align-self: flex-end;
+        }
+
+        .splitter-container {
+            padding: 10px;
+        }
+
+        .history-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .filter-group {
+            width: 100%;
+        }
+
+        .filter-group select {
+            flex: 1;
+        }
+    }
+
+    .error-message {
+        background: #fff3f3;
+        border: 1px solid #ffcdd2;
+        color: #c62828;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .error-message i {
+        font-size: 1.2em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="splitter-container">
+    <div class="splitter-card">
+        <div class="card-header">
+            <h2><i class="fas fa-receipt"></i> Bill Splitter</h2>
+            <p>Split your bills easily with friends</p>
+        </div>
+
+        <div class="bill-form">
+            <div class="form-group">
+                <label for="split-title">
+                    <i class="fas fa-heading"></i> Split Title
+                </label>
+                <input type="text" id="split-title" placeholder="Enter a name for this split (e.g., Dinner at Restaurant)" required>
+            </div>
+
+            <div class="form-group">
+                <label for="bill-amount">
+                    <i class="fas fa-rupee-sign"></i> Total Bill Amount
+                </label>
+                <input type="number" id="bill-amount" min="0" step="0.01" placeholder="Enter total amount" onchange="updateSplit()">
+            </div>
+            
+            <div class="form-group">
+                <label for="tip-percentage">
+                    <i class="fas fa-percentage"></i> Tip Percentage (Optional)
+                </label>
+                <input type="number" id="tip-percentage" min="0" max="100" placeholder="Enter tip percentage" onchange="updateSplit()">
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-users"></i> People and Their Payments
+                </label>
+                <div class="people-list" id="people-list">
+                    <!-- People will be added here dynamically -->
+                </div>
+                <button class="add-person-btn" onclick="addPerson()">
+                    <i class="fas fa-plus"></i> Add Person
+                </button>
+            </div>
+
+            <button class="calculate-btn" onclick="calculateSplit()">
+                <i class="fas fa-calculator"></i> Calculate Split
+            </button>
+
+            <div class="result-section" style="display: none;">
+                <h3>Split Results</h3>
+                <div class="result-details">
+                    <div class="result-item">
+                        <span>Bill Amount:</span>
+                        <span id="result-bill">₹0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <span>Tip Amount:</span>
+                        <span id="result-tip">₹0.00</span>
+                    </div>
+                    <div class="result-item total">
+                        <span>Total Amount:</span>
+                        <span id="result-total">₹0.00</span>
+                    </div>
+                    <div class="result-item per-person">
+                        <span>Amount Per Person:</span>
+                        <span id="result-per-person">₹0.00</span>
+                    </div>
+                </div>
+
+                <div class="settlements-section">
+                    <h3>Settlements</h3>
+                    <div id="settlements-list" class="settlements-list">
+                        <!-- Settlements will be added here -->
+                    </div>
+                </div>
+
+                <button class="save-split-btn" onclick="saveSplit()">
+                    <i class="fas fa-save"></i> Save Split
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="split-history-card">
+        <div class="card-header">
+            <div class="history-header">
+                <h2><i class="fas fa-history"></i> Split History</h2>
+                <div class="filter-group">
+                    <label for="time-filter">Time Period:</label>
+                    <select id="time-filter" onchange="loadSplitHistory()">
+                        <option value="all">All Time</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="last_month">Last Month</option>
+                        <option value="last_3_months">Last 3 Months</option>
+                        <option value="last_6_months">Last 6 Months</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div id="splits-list" class="splits-list">
+            <!-- Split history will be loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let peopleCount = 0;
+let currentSplitData = null;
+let currentSplitId = null;  // Add this to track the current split being edited
+
+function addPerson() {
+    peopleCount++;
+    const personDiv = document.createElement('div');
+    personDiv.className = 'person-item';
+    personDiv.innerHTML = `
+        <div class="person-details">
+            <input type="text" placeholder="Enter name" class="person-name" onchange="updateSplit()">
+            <input type="number" placeholder="Amount paid" class="person-paid" min="0" step="0.01" value="0" onchange="updateSplit()">
+        </div>
+        <button class="remove-person" onclick="removePerson(this)">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    document.getElementById('people-list').appendChild(personDiv);
+    updateSplit();
+}
+
+function removePerson(button) {
+    button.parentElement.remove();
+    peopleCount--;
+    updateSplit();
+}
+
+function updateSplit() {
+    const billAmount = parseFloat(document.getElementById('bill-amount').value) || 0;
+    const tipPercentage = parseFloat(document.getElementById('tip-percentage').value) || 0;
+    const tipAmount = (billAmount * tipPercentage) / 100;
+    const totalAmount = billAmount + tipAmount;
+    const people = document.getElementsByClassName('person-item').length;
+    
+    if (people > 0) {
+        const amountPerPerson = totalAmount / people;
+        
+        document.getElementById('result-bill').textContent = `₹${billAmount.toFixed(2)}`;
+        document.getElementById('result-tip').textContent = `₹${tipAmount.toFixed(2)}`;
+        document.getElementById('result-total').textContent = `₹${totalAmount.toFixed(2)}`;
+        document.getElementById('result-per-person').textContent = `₹${amountPerPerson.toFixed(2)}`;
+        
+        document.querySelector('.result-section').style.display = 'block';
+    }
+}
+
+function showError(message) {
+    const resultSection = document.querySelector('.result-section');
+    resultSection.style.display = 'block';
+    
+    // Create error message div
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.innerHTML = `
+        <i class="fas fa-exclamation-circle"></i>
+        ${message}
+    `;
+    
+    // Clear previous error if exists
+    const existingError = resultSection.querySelector('.error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    // Insert error at the top of the result section
+    resultSection.insertBefore(errorDiv, resultSection.firstChild);
+}
+
+function showSplitDetails(split) {
+    // Store the split ID for updates
+    currentSplitId = split.id;
+    
+    // Fill in the form with the split details
+    document.getElementById('split-title').value = split.title;
+    document.getElementById('bill-amount').value = split.total_amount;
+    document.getElementById('tip-percentage').value = split.tip_percentage || '';
+
+    // Clear existing people
+    document.getElementById('people-list').innerHTML = '';
+    peopleCount = 0;
+
+    // Add participants
+    split.participants.forEach(participant => {
+        addPerson();
+        const lastPerson = document.querySelector('.person-item:last-child');
+        lastPerson.querySelector('.person-name').value = participant.name;
+        lastPerson.querySelector('.person-paid').value = participant.paid;
+    });
+
+    // Initialize currentSplitData with the loaded split data
+    currentSplitData = {
+        title: split.title,
+        total_amount: split.total_amount,
+        tip_percentage: split.tip_percentage || 0,
+        participants: split.participants,
+        settlements: split.settlements
+    };
+
+    // Calculate and show results
+    calculateSplit();
+}
+
+function calculateSplit() {
+    const billAmount = parseFloat(document.getElementById('bill-amount').value);
+    if (!billAmount || billAmount <= 0) {
+        showError('Please enter a valid bill amount');
+        return;
+    }
+
+    const tipPercentage = parseFloat(document.getElementById('tip-percentage').value) || 0;
+    const tipAmount = (billAmount * tipPercentage) / 100;
+    const totalAmount = billAmount + tipAmount;
+    
+    const people = Array.from(document.getElementsByClassName('person-item'));
+    if (people.length < 2) {
+        showError('Please add at least 2 people to split the bill');
+        return;
+    }
+
+    // Calculate individual balances
+    const settlements = [];
+    const personBalances = people.map(person => {
+        const name = person.querySelector('.person-name').value;
+        if (!name) {
+            showError('Please enter names for all participants');
+            return null;
+        }
+        const paid = parseFloat(person.querySelector('.person-paid').value) || 0;
+        const amountOwed = totalAmount / people.length;
+        
+        return {
+            name: name,
+            paid: paid,
+            balance: paid - amountOwed
+        };
+    });
+
+    if (personBalances.includes(null)) return;
+
+    // Calculate total paid amount
+    const totalPaid = personBalances.reduce((sum, person) => sum + person.paid, 0);
+    if (Math.abs(totalPaid - billAmount) > 0.01) {
+        const difference = totalPaid - billAmount;
+        const message = difference > 0 
+            ? `Total payments (₹${totalPaid.toFixed(2)}) exceed bill amount (₹${billAmount.toFixed(2)}) by ₹${difference.toFixed(2)}`
+            : `Total payments (₹${totalPaid.toFixed(2)}) are less than bill amount (₹${billAmount.toFixed(2)}) by ₹${Math.abs(difference).toFixed(2)}`;
+        showError(message);
+        return;
+    }
+
+    // Clear any existing error message
+    const existingError = document.querySelector('.error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+
+    // Calculate settlements
+    const debtors = personBalances.filter(p => p.balance < 0).sort((a, b) => a.balance - b.balance);
+    const creditors = personBalances.filter(p => p.balance > 0).sort((a, b) => b.balance - a.balance);
+    
+    const settlementsList = document.getElementById('settlements-list');
+    settlementsList.innerHTML = '';
+
+    // Match debtors with creditors
+    debtors.forEach(debtor => {
+        let remainingDebt = Math.abs(debtor.balance);
+        
+        creditors.forEach(creditor => {
+            if (remainingDebt > 0 && creditor.balance > 0) {
+                const amount = Math.min(remainingDebt, creditor.balance);
+                if (amount > 0) {
+                    const settlement = {
+                        from: debtor.name,
+                        to: creditor.name,
+                        amount: amount
+                    };
+                    settlements.push(settlement);
+
+                    const settlementDiv = document.createElement('div');
+                    settlementDiv.className = 'settlement-item';
+                    settlementDiv.innerHTML = `
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="debtor">${settlement.from}</span> owes 
+                        <span class="amount">₹${amount.toFixed(2)}</span> to 
+                        <span class="creditor">${settlement.to}</span>
+                    `;
+                    settlementsList.appendChild(settlementDiv);
+                    
+                    remainingDebt -= amount;
+                    creditor.balance -= amount;
+                }
+            }
+        });
+    });
+
+    // Update currentSplitData with latest calculations
+    const title = document.getElementById('split-title').value;
+    currentSplitData = {
+        title: title,
+        total_amount: totalAmount,
+        tip_percentage: tipPercentage,
+        participants: personBalances,
+        settlements: settlements
+    };
+
+    // Update display
+    document.getElementById('result-bill').textContent = `₹${billAmount.toFixed(2)}`;
+    document.getElementById('result-tip').textContent = `₹${tipAmount.toFixed(2)}`;
+    document.getElementById('result-total').textContent = `₹${totalAmount.toFixed(2)}`;
+    document.getElementById('result-per-person').textContent = `₹${(totalAmount / people.length).toFixed(2)}`;
+    
+    // Always show save button
+    const saveButton = document.querySelector('.save-split-btn');
+    if (!saveButton) {
+        const newSaveButton = document.createElement('button');
+        newSaveButton.className = 'save-split-btn';
+        newSaveButton.innerHTML = '<i class="fas fa-save"></i> Save Split';
+        newSaveButton.onclick = saveSplit;
+        document.querySelector('.result-section').appendChild(newSaveButton);
+    }
+}
+
+async function saveSplit() {
+    if (!currentSplitData) {
+        alert('Please calculate the split first');
+        return;
+    }
+
+    const title = document.getElementById('split-title').value;
+    if (!title) {
+        showError('Please enter a title to save the split');
+        return;
+    }
+
+    // Update currentSplitData with the latest title
+    currentSplitData.title = title;
+
+    try {
+        const url = currentSplitId ? `/api/splits/${currentSplitId}` : '/api/splits';
+        const method = currentSplitId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(currentSplitData)
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert(currentSplitId ? 'Split updated successfully!' : 'Split saved successfully!');
+            loadSplitHistory();
+            resetForm();
+        } else {
+            throw new Error(data.error || 'Failed to save split');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to save split');
+    }
+}
+
+function resetForm() {
+    document.getElementById('split-title').value = '';
+    document.getElementById('bill-amount').value = '';
+    document.getElementById('tip-percentage').value = '';
+    document.getElementById('people-list').innerHTML = '';
+    document.querySelector('.result-section').style.display = 'none';
+    currentSplitData = null;
+    currentSplitId = null;  // Reset the split ID
+    peopleCount = 0;
+    addPerson();
+}
+
+function filterSplitsByTime(splits, timeFilter) {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfDay);
+    startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    const startOfLast3Months = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+    const startOfLast6Months = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+
+    return splits.filter(split => {
+        const splitDate = new Date(split.date);
+        switch(timeFilter) {
+            case 'week':
+                return splitDate >= startOfWeek;
+            case 'month':
+                return splitDate >= startOfMonth;
+            case 'last_month':
+                return splitDate >= startOfLastMonth && splitDate <= endOfLastMonth;
+            case 'last_3_months':
+                return splitDate >= startOfLast3Months;
+            case 'last_6_months':
+                return splitDate >= startOfLast6Months;
+            default:
+                return true;
+        }
+    });
+}
+
+async function loadSplitHistory() {
+    try {
+        const response = await fetch('/api/splits');
+        const splits = await response.json();
+        
+        const timeFilter = document.getElementById('time-filter').value;
+        const filteredSplits = filterSplitsByTime(splits, timeFilter);
+        
+        const splitsList = document.getElementById('splits-list');
+        splitsList.innerHTML = '';
+        
+        if (filteredSplits.length === 0) {
+            splitsList.innerHTML = '<div class="no-splits">No splits found for the selected time period</div>';
+            return;
+        }
+        
+        filteredSplits.forEach(split => {
+            const splitItem = document.createElement('div');
+            splitItem.className = 'split-item';
+            splitItem.innerHTML = `
+                <div class="split-item-header">
+                    <span class="split-item-title">${split.title}</span>
+                    <button class="delete-split-btn" onclick="deleteSplit(${split.id}, event)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="split-item-date">${new Date(split.date).toLocaleDateString()}</div>
+                <div class="split-item-amount">Total: ₹${split.total_amount.toFixed(2)}</div>
+            `;
+            splitItem.addEventListener('click', () => showSplitDetails(split));
+            splitsList.appendChild(splitItem);
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        const splitsList = document.getElementById('splits-list');
+        splitsList.innerHTML = '<div class="error-message">Failed to load splits</div>';
+    }
+}
+
+async function deleteSplit(splitId, event) {
+    event.stopPropagation();
+    if (!confirm('Are you sure you want to delete this split?')) return;
+
+    try {
+        const response = await fetch(`/api/splits/${splitId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            loadSplitHistory();
+        } else {
+            throw new Error('Failed to delete split');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to delete split');
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    addPerson();
+    loadSplitHistory();
+});
+</script>
+{% endblock %} 

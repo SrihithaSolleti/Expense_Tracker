@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    body {
+        background: #f5f5f5;
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    .greeting {
+        text-align: center;
+        padding: 2rem;
+        background: white;
+        color: #2d3436;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .greeting h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 600;
+    }
+
+    .dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .balance-display {
+        margin: 0 auto 2rem auto;
+        max-width: 600px;
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+        padding: 20px;
+    }
+
+    .option-box {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e0e0e0;
+    }
+
+    .option-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .option-box:nth-child(1),
+    .option-box:nth-child(2),
+    .option-box:nth-child(3),
+    .option-box:nth-child(4) {
+        background: #9333ea;
+        color: white;
+        border: none;
+    }
+
+    .option-box i {
+        font-size: 3em;
+        margin-bottom: 15px;
+        text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .option-box h3 {
+        margin: 15px 0;
+        font-size: 1.5em;
+        font-weight: 600;
+    }
+
+    .option-box p {
+        font-size: 1em;
+        opacity: 0.9;
+        line-height: 1.4;
+        margin: 0;
+    }
+
+    .balance-card {
+        background: white;
+        color: #2d3436;
+        border-radius: 15px;
+        padding: 25px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .balance-card h2 {
+        margin: 0 0 20px 0;
+        font-size: 1.8em;
+        font-weight: 600;
+    }
+
+    .amount {
+        font-size: 2em;
+        font-weight: bold;
+        margin: 15px 0;
+    }
+
+    .transactions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 25px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .incoming, .outgoing {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .arrow {
+        font-size: 1.5em;
+        margin-right: 5px;
+    }
+
+    .arrow.up {
+        color: #2ecc71;
+    }
+
+    .arrow.down {
+        color: #e74c3c;
+    }
+
+    @media (max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .greeting h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="greeting">
+    <h1>Welcome, <span id="username">Loading...</span>!</h1>
+</div>
+
+<div class="dashboard">
+    <div class="options-grid">
+        <div class="option-box" onclick="window.location.href='/transactions'">
+            <i class="fas fa-exchange-alt"></i>
+            <h3>Transactions</h3>
+            <p>View all transactions</p>
+        </div>
+        <div class="option-box" onclick="window.location.href='/splitter'">
+            <i class="fas fa-receipt"></i>
+            <h3>Splitter</h3>
+            <p>Split bills with friends</p>
+        </div>
+        <div class="option-box" onclick="window.location.href='/stats'">
+            <i class="fas fa-chart-pie"></i>
+            <h3>Statistics</h3>
+            <p>View your spending patterns</p>
+        </div>
+        <div class="option-box" onclick="window.location.href='/check-balance'">
+            <i class="fas fa-wallet"></i>
+            <h3>Check Balance</h3>
+            <p>View your current balance</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Fetch user profile data
+    fetch('/api/profile')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('username').textContent = data.name;
+        })
+        .catch(error => console.error('Error:', error));
+</script>
+{% endblock %} 

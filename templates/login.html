@@ -1,0 +1,137 @@
+{% extends "auth_base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 80px);
+        background: #f5f5f5;
+    }
+
+    .auth-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .auth-card h1 {
+        color: #9333ea;
+        margin: 0 0 1rem 0;
+        font-size: 2rem;
+    }
+
+    .auth-card h2 {
+        color: #333;
+        margin: 0 0 1.5rem 0;
+        font-size: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+        text-align: left;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    .auth-btn {
+        width: 100%;
+        padding: 0.75rem;
+        background: #9333ea;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 1rem;
+    }
+
+    .auth-btn:hover {
+        background: #7928ca;
+    }
+
+    .auth-link {
+        margin-top: 1rem;
+        color: #666;
+    }
+
+    .auth-link a {
+        color: #9333ea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-link a:hover {
+        text-decoration: underline;
+    }
+
+    .alert {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+        font-weight: 500;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>MoneyMate</h1>
+        <h2>Login</h2>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-error">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="auth-btn">Login</button>
+        </form>
+        
+        <p class="auth-link">
+            Don't have an account? <a href="{{ url_for('register') }}">Register</a>
+        </p>
+    </div>
+</div>
+{% endblock %} 
